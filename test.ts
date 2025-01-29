@@ -70,8 +70,7 @@ const interpretResults = (arr: Array<number>) => {
 const test = async(nodeProviders: any, funcName: string, params: Array<any> = []) => {
   const allResults: any = {};
   let results: Array<number>;
-  const ns: Array<number> = [1, 2, 16, 24, 32, 160];
-  // const ns: Array<number> = [1, 2, 4, 8, 12, 16, 24, 32, 48, 64, 80, 96, 112, 128, 160, 192];
+  const ns: Array<number> = [1, 2, 4, 8, 12, 16, 24, 32, 48, 64, 80, 96, 112, 128, 160, 192];
 
   for(let j: number = 0; j < ns.length; j++) {
     const n: number = ns[j];
@@ -90,7 +89,25 @@ const test = async(nodeProviders: any, funcName: string, params: Array<any> = []
 const printTable = (resultsObj: any) => {
   let resultsText = 'Metric\t\tMin\tMax\tAvg\tMedian\n';
 
-  const keys = Object.keys(resultsObj).sort();
+  const keys = Object.keys(resultsObj).sort((a, b) => {
+    // Remove "_calls" suffix and split remaining parts
+    const aParts = a.replace('_calls', '').split('_');
+    const bParts = b.replace('_calls', '').split('_');
+    
+    // Get the last parts which contain numbers
+    const aNum = parseInt(aParts[aParts.length - 1]);
+    const bNum = parseInt(bParts[bParts.length - 1]);
+    
+    // If base keys (everything except the number) are the same, sort by number
+    const aBase = aParts.slice(0, -1).join('_');
+    const bBase = bParts.slice(0, -1).join('_');
+    if (aBase === bBase) {
+      return aNum - bNum;
+    }
+    
+    // Otherwise sort alphabetically
+    return aBase.localeCompare(bBase);
+  });
 
   for(let key of keys) {
     const values = resultsObj[key];
